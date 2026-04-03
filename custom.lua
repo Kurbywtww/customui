@@ -7,25 +7,26 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = { Toggled = true, Accent = Color3.fromRGB(160, 60, 255), _blockDrag = false }
 
--- Lucide Icons (from dawid-scripts/Fluent verified asset IDs)
+-- Lucide Icons via latte-soft/lucide-roblox (48px sprite-sheet data)
+-- Format: { assetId, rectW, rectH, rectOffsetX, rectOffsetY }
 local Icons = {
-    home = "rbxassetid://10723407389",
-    flame = "rbxassetid://10723376114",
-    settings = "rbxassetid://10734950309",
-    account = "rbxassetid://10747373176", -- Lucide 'user' (verified working)
-    eye = "rbxassetid://10723346959",
-    ["map-pin"] = "rbxassetid://10734886004",
-    ["bar-chart-2"] = "rbxassetid://10709770317",
-    swords = "rbxassetid://10734975692",
-    user = "rbxassetid://10747373176",
-    shield = "rbxassetid://10734951847",
-    zap = "rbxassetid://10747398811",
-    target = "rbxassetid://10734977012",
-    globe = "rbxassetid://10723404337",
-    layout = "rbxassetid://10723425376",
-    search = "rbxassetid://10734943674",
-    save = "rbxassetid://10734941499",
-    sliders = "rbxassetid://10734963400",
+    home          = { 16898613509, 48, 48, 820, 147 },
+    flame         = { 16898613353, 48, 48, 967, 306 },
+    settings      = { 16898613777, 48, 48, 771, 257 },
+    account       = { 16898613869, 48, 48, 661, 869 },
+    eye           = { 16898613353, 48, 48, 771, 563 },
+    ["map-pin"]   = { 16898613613, 48, 48, 820, 257 },
+    ["bar-chart-2"] = { 16898612629, 48, 48, 967, 710 },
+    swords        = { 16898613777, 48, 48, 967, 759 },
+    user          = { 16898613869, 48, 48, 661, 869 },
+    shield        = { 16898613777, 48, 48, 869,   0 },
+    zap           = { 16898613869, 48, 48, 918, 906 },
+    target        = { 16898613869, 48, 48, 514, 771 },
+    globe         = { 16898613509, 48, 48, 771, 563 },
+    layout        = { 16898613509, 48, 48, 967, 612 },
+    search        = { 16898613699, 48, 48, 918, 857 },
+    save          = { 16898613699, 48, 48, 918, 453 },
+    sliders       = { 16898613777, 48, 48, 404, 771 },
 }
 
 local function Create(class, props)
