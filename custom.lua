@@ -138,7 +138,54 @@ function Library:CreateWindow(title)
     local Folder = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 48), Size = UDim2.new(1, 0, 1, -48) })
     Library:MakeDraggable(Main)
 
+    -- Mobile detection & toggle
+    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    local toggled = true
+
+    local function toggleUI()
+        toggled = not toggled
+        Main.Visible = toggled
+    end
+
+    -- RightShift to toggle (always active)
+    UIS.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.RightShift then
+            toggleUI()
+        end
+    end)
+
+    -- Mobile: Floating toggle button
+    if isMobile then
+        local ToggleBtn = Create("ImageButton", {
+            Name = "MobileToggle",
+            Parent = ScreenGui,
+            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+            Position = UDim2.new(1, -60, 1, -60),
+            Size = UDim2.new(0, 44, 0, 44),
+            Image = "",
+            AutoButtonColor = false,
+            ZIndex = 100
+        })
+        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = ToggleBtn })
+        Create("UIStroke", { Color = Library.Accent, Thickness = 2, Parent = ToggleBtn })
+        Create("TextLabel", {
+            Parent = ToggleBtn,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = "GothamBold",
+            Text = "K",
+            TextColor3 = Library.Accent,
+            TextSize = 20,
+            ZIndex = 101
+        })
+        Library:MakeDraggable(ToggleBtn)
+        ToggleBtn.MouseButton1Click:Connect(function()
+            toggleUI()
+        end)
+    end
+
     local Window = { Current = nil }
+
 
     function Window:CreateTab(name, iconName)
         local icon = Library:GetIcon(iconName or "home")
@@ -283,6 +330,8 @@ function Library:CreateWindow(title)
                     SPage.CanvasSize = UDim2.new(0, 0, 0, SPage.UIListLayout.AbsoluteContentSize.Y + 40)
                 end)
                 local S = {}
+
+                -- TOGGLE
                 function S:CreateToggle(n, def, cb)
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
@@ -295,13 +344,157 @@ function Library:CreateWindow(title)
                     local function u() Tween(O, 0.2, { BackgroundColor3 = t and Library.Accent or Color3.fromRGB(35, 35, 35) }); Tween(I, 0.2, { Position = t and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7) }); if cb then cb(t) end end
                     F.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then t = not t; u() end end)
                     u()
+                    return { Set = function(_, v) t = v; u() end }
                 end
+
+                -- BUTTON
                 function S:CreateButton(n, cb)
                     local B = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = B })
                     Create("TextLabel", { Parent = B, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14 })
+                    B.MouseEnter:Connect(function() Tween(B, 0.15, { BackgroundColor3 = Color3.fromRGB(20, 20, 20) }) end)
+                    B.MouseLeave:Connect(function() Tween(B, 0.15, { BackgroundColor3 = Color3.fromRGB(13, 13, 13) }) end)
                     B.MouseButton1Click:Connect(function() if cb then cb() end end)
                 end
+
+                -- SLIDER
+                function S:CreateSlider(n, min, max, def, cb)
+                    min = min or 0; max = max or 100; def = def or min; cb = cb or function() end
+                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 50) })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
+                    Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -70, 0, 24), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
+                    local Val = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(1, -60, 0, 0), Size = UDim2.new(0, 48, 0, 24), Font = "GothamBold", Text = tostring(def), TextColor3 = Library.Accent, TextSize = 13, TextXAlignment = "Right" })
+                    local Bar = Create("Frame", { Parent = F, BackgroundColor3 = Color3.fromRGB(35, 35, 35), Position = UDim2.new(0, 12, 0, 32), Size = UDim2.new(1, -24, 0, 6) })
+                    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Bar })
+                    local Fill = Create("Frame", { Parent = Bar, BackgroundColor3 = Library.Accent, Size = UDim2.new((def - min) / (max - min), 0, 1, 0) })
+                    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Fill })
+                    local Knob = Create("Frame", { Parent = Fill, AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Color3.new(1, 1, 1), Position = UDim2.new(1, 0, 0.5, 0), Size = UDim2.new(0, 12, 0, 12) })
+                    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Knob })
+                    local dragging = false
+                    local function move(input)
+                        local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+                        local val = math.floor(min + (max - min) * pos)
+                        Fill.Size = UDim2.new(pos, 0, 1, 0)
+                        Val.Text = tostring(val)
+                        cb(val)
+                    end
+                    Bar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true; move(i) end end)
+                    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
+                    UIS.InputChanged:Connect(function(i) if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then move(i) end end)
+                    return { Set = function(_, v) local p = (v - min)/(max - min); Fill.Size = UDim2.new(p, 0, 1, 0); Val.Text = tostring(v); cb(v) end }
+                end
+
+                -- DROPDOWN
+                function S:CreateDropdown(n, items, def, cb)
+                    items = items or {}; cb = cb or function() end
+                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
+                    local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = def and (n .. ": " .. tostring(def)) or n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
+                    local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 20, 0, 42), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
+                    local ItemList = Create("Frame", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 6, 0, 42), Size = UDim2.new(1, -12, 0, 0) })
+                    Create("UIListLayout", { Parent = ItemList, Padding = UDim.new(0, 3) })
+                    local opened = false
+                    local function refresh(list)
+                        for _, c in next, ItemList:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
+                        for _, item in next, list do
+                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(22, 22, 22), Size = UDim2.new(1, 0, 0, 28), Font = "Gotham", Text = tostring(item), TextColor3 = Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false })
+                            Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = Btn })
+                            Btn.MouseEnter:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(30, 30, 30) }) end)
+                            Btn.MouseLeave:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(22, 22, 22) }) end)
+                            Btn.MouseButton1Click:Connect(function()
+                                Lbl.Text = n .. ": " .. tostring(item)
+                                opened = false
+                                Arrow.Text = "v"
+                                Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, 42) })
+                                cb(item)
+                            end)
+                        end
+                    end
+                    refresh(items)
+                    F.InputBegan:Connect(function(i)
+                        if i.UserInputType == Enum.UserInputType.MouseButton1 and i.Position.Y < F.AbsolutePosition.Y + 42 then
+                            opened = not opened
+                            Arrow.Text = opened and "^" or "v"
+                            local h = opened and (42 + ItemList.UIListLayout.AbsoluteContentSize.Y + 8) or 42
+                            Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
+                        end
+                    end)
+                    return { Refresh = function(_, list) refresh(list) end }
+                end
+
+                -- TEXTBOX
+                function S:CreateTextBox(n, placeholder, cb)
+                    cb = cb or function() end
+                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
+                    Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(0.4, 0, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
+                    local Box = Create("TextBox", {
+                        Parent = F,
+                        BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+                        AnchorPoint = Vector2.new(1, 0.5),
+                        Position = UDim2.new(1, -10, 0.5, 0),
+                        Size = UDim2.new(0.5, -10, 0, 26),
+                        Font = "Gotham",
+                        Text = "",
+                        PlaceholderText = placeholder or "Enter...",
+                        PlaceholderColor3 = Color3.fromRGB(100, 100, 100),
+                        TextColor3 = Color3.new(1, 1, 1),
+                        TextSize = 13,
+                        ClearTextOnFocus = false
+                    })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = Box })
+                    Create("UIPadding", { Parent = Box, PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) })
+                    Box.Focused:Connect(function() Tween(Box, 0.15, { BackgroundColor3 = Color3.fromRGB(30, 30, 30) }) end)
+                    Box.FocusLost:Connect(function(enter) Tween(Box, 0.15, { BackgroundColor3 = Color3.fromRGB(22, 22, 22) }); if enter then cb(Box.Text) end end)
+                    return { Set = function(_, v) Box.Text = v end, Get = function() return Box.Text end }
+                end
+
+                -- LABEL
+                function S:CreateLabel(n)
+                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 32) })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
+                    local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -24, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(180, 180, 180), TextSize = 13, TextXAlignment = "Left" })
+                    return { Set = function(_, v) Lbl.Text = v end }
+                end
+
+                -- KEYBIND
+                function S:CreateKeybind(n, defKey, cb)
+                    cb = cb or function() end
+                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
+                    Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -100, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
+                    local KeyBtn = Create("TextButton", {
+                        Parent = F,
+                        AnchorPoint = Vector2.new(1, 0.5),
+                        BackgroundColor3 = Color3.fromRGB(22, 22, 22),
+                        Position = UDim2.new(1, -10, 0.5, 0),
+                        Size = UDim2.new(0, 70, 0, 26),
+                        Font = "GothamBold",
+                        Text = defKey and defKey.Name or "None",
+                        TextColor3 = Library.Accent,
+                        TextSize = 12,
+                        AutoButtonColor = false
+                    })
+                    Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = KeyBtn })
+                    local binding = false
+                    local currentKey = defKey
+                    KeyBtn.MouseButton1Click:Connect(function()
+                        binding = true
+                        KeyBtn.Text = "..."
+                    end)
+                    UIS.InputBegan:Connect(function(input)
+                        if binding then
+                            if input.UserInputType == Enum.UserInputType.Keyboard then
+                                currentKey = input.KeyCode
+                                KeyBtn.Text = input.KeyCode.Name
+                                binding = false
+                            end
+                        elseif currentKey and input.KeyCode == currentKey then
+                            cb(currentKey)
+                        end
+                    end)
+                end
+
                 return S
             end
             return SubTab
