@@ -188,7 +188,6 @@ function Library:CreateWindow(title)
 
 
     function Window:CreateTab(name, iconName)
-        local icon = Library:GetIcon(iconName or "home")
 
         local Btn = Create("ImageButton", {
             Name = name .. "Tab",
@@ -220,15 +219,19 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Ind })
 
-        -- Lucide icon (ImageLabel — verified Roblox asset IDs)
+        -- Lucide icon via sprite sheet
+        local iconData = Library:GetIcon(iconName or "home")
         local Ico = Create("ImageLabel", {
             Name = "Icon",
             Parent = Btn,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0.5, -12, 0.5, -12),
-            Size = UDim2.new(0, 24, 0, 24),
-            Image = icon,
+            Position = UDim2.new(0.5, -18, 0.5, -18),
+            Size = UDim2.new(0, 36, 0, 36),
+            Image = "rbxassetid://" .. iconData[1],
+            ImageRectSize = Vector2.new(iconData[2], iconData[3]),
+            ImageRectOffset = Vector2.new(iconData[4], iconData[5]),
             ImageColor3 = Color3.fromRGB(140, 140, 140),
+            ScaleType = Enum.ScaleType.Fit,
             ZIndex = 6
         })
 
@@ -263,17 +266,20 @@ function Library:CreateWindow(title)
         Btn.MouseLeave:Connect(function() if not Window.Current or Window.Current.Tab ~= Tab then Tween(Highlight, 0.2, { BackgroundTransparency = 1 }) end end)
 
         function Tab:CreateSubTab(stName, stIconName)
-            local stIcon = Library:GetIcon(stIconName or "layout")
+            local stIconData = Library:GetIcon(stIconName or "layout")
             local SBtn = Create("Frame", { Parent = SubTabBar, BackgroundTransparency = 1, Size = UDim2.new(0, 0, 1, 0), AutomaticSize = "X", Visible = false })
             local SClick = Create("TextButton", { Parent = SBtn, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Text = "" })
             local SIco = Create("ImageLabel", {
                 Name = "Icon",
                 Parent = SBtn,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 0, 0.5, -8),
-                Size = UDim2.new(0, 16, 0, 16),
-                Image = stIcon,
-                ImageColor3 = Color3.fromRGB(160, 160, 160)
+                Position = UDim2.new(0, 0, 0.5, -10),
+                Size = UDim2.new(0, 20, 0, 20),
+                Image = "rbxassetid://" .. stIconData[1],
+                ImageRectSize = Vector2.new(stIconData[2], stIconData[3]),
+                ImageRectOffset = Vector2.new(stIconData[4], stIconData[5]),
+                ImageColor3 = Color3.fromRGB(160, 160, 160),
+                ScaleType = Enum.ScaleType.Fit
             })
             local SText = Create("TextLabel", {
                 Name = "Label",
