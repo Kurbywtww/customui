@@ -7,25 +7,25 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = { Toggled = true, Accent = Color3.fromRGB(160, 60, 255), _blockDrag = false }
 
--- Emoji Icons (no asset ID dependency — always render)
+-- Lucide Icons (from dawid-scripts/Fluent verified asset IDs)
 local Icons = {
-    home        = "🏠",
-    flame       = "🔥",
-    settings    = "⚙️",
-    account     = "👤",
-    eye         = "👁",
-    ["map-pin"] = "📍",
-    ["bar-chart-2"] = "📊",
-    swords      = "⚔️",
-    user        = "👤",
-    shield      = "🛡️",
-    zap         = "⚡",
-    target      = "🎯",
-    globe       = "🌐",
-    layout      = "📋",
-    search      = "🔍",
-    save        = "💾",
-    sliders     = "🎚️",
+    home = "rbxassetid://10723407389",
+    flame = "rbxassetid://10723376114",
+    settings = "rbxassetid://10734950309",
+    account = "rbxassetid://10747373176", -- Lucide 'user' (verified working)
+    eye = "rbxassetid://10723346959",
+    ["map-pin"] = "rbxassetid://10734886004",
+    ["bar-chart-2"] = "rbxassetid://10709770317",
+    swords = "rbxassetid://10734975692",
+    user = "rbxassetid://10747373176",
+    shield = "rbxassetid://10734951847",
+    zap = "rbxassetid://10747398811",
+    target = "rbxassetid://10734977012",
+    globe = "rbxassetid://10723404337",
+    layout = "rbxassetid://10723425376",
+    search = "rbxassetid://10734943674",
+    save = "rbxassetid://10734941499",
+    sliders = "rbxassetid://10734963400",
 }
 
 local function Create(class, props)
@@ -220,17 +220,15 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Ind })
 
-        -- Emoji icon label
-        local Ico = Create("TextLabel", {
+        -- Lucide icon (ImageLabel — verified Roblox asset IDs)
+        local Ico = Create("ImageLabel", {
             Name = "Icon",
             Parent = Btn,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(1, 0, 1, 0),
-            Font = Enum.Font.GothamBold,
-            Text = icon,
-            TextColor3 = Color3.fromRGB(140, 140, 140),
-            TextSize = 18,
+            Position = UDim2.new(0.5, -12, 0.5, -12),
+            Size = UDim2.new(0, 24, 0, 24),
+            Image = icon,
+            ImageColor3 = Color3.fromRGB(140, 140, 140),
             ZIndex = 6
         })
 
@@ -240,7 +238,7 @@ function Library:CreateWindow(title)
             for _, v in next, List:GetChildren() do
                 if v:IsA("ImageButton") then
                     if v:FindFirstChild("Indicator") then Tween(v.Indicator, 0.25, { BackgroundTransparency = 1 }) end
-                    if v:FindFirstChild("Icon") then Tween(v.Icon, 0.25, { TextColor3 = Color3.fromRGB(140, 140, 140) }) end
+                    if v:FindFirstChild("Icon") then Tween(v.Icon, 0.25, { ImageColor3 = Color3.fromRGB(140, 140, 140) }) end
                     for _, f in next, v:GetChildren() do
                         if f:IsA("Frame") and f.Name ~= "Indicator" then Tween(f, 0.25, { BackgroundTransparency = 1 }) end
                     end
@@ -253,7 +251,7 @@ function Library:CreateWindow(title)
                 end
             end
             Window.Current = { Tab = Tab }
-            Tween(Ico, 0.25, { TextColor3 = Library.Accent })
+            Tween(Ico, 0.25, { ImageColor3 = Library.Accent })
             Tween(Ind, 0.25, { BackgroundTransparency = 0 })
             Tween(Highlight, 0.25, { BackgroundTransparency = 0.85 })
             for _, st in next, Tab.SubTabs do st.Btn.Visible = true end
@@ -268,16 +266,14 @@ function Library:CreateWindow(title)
             local stIcon = Library:GetIcon(stIconName or "layout")
             local SBtn = Create("Frame", { Parent = SubTabBar, BackgroundTransparency = 1, Size = UDim2.new(0, 0, 1, 0), AutomaticSize = "X", Visible = false })
             local SClick = Create("TextButton", { Parent = SBtn, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Text = "" })
-            local SIco = Create("TextLabel", {
+            local SIco = Create("ImageLabel", {
                 Name = "Icon",
                 Parent = SBtn,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 0, 0, 0),
-                Size = UDim2.new(0, 20, 1, 0),
-                Font = Enum.Font.GothamBold,
-                Text = stIcon,
-                TextColor3 = Color3.fromRGB(160, 160, 160),
-                TextSize = 14
+                Position = UDim2.new(0, 0, 0.5, -8),
+                Size = UDim2.new(0, 16, 0, 16),
+                Image = stIcon,
+                ImageColor3 = Color3.fromRGB(160, 160, 160)
             })
             local SText = Create("TextLabel", {
                 Name = "Label",
@@ -309,14 +305,14 @@ function Library:CreateWindow(title)
                 if Tab.CurrentST then
                     Tab.CurrentST.Page.Visible = false
                     Tween(Tab.CurrentST.Btn.Label, 0.2, { TextColor3 = Color3.fromRGB(160, 160, 160) })
-                    Tween(Tab.CurrentST.Btn.Icon, 0.2, { TextColor3 = Color3.fromRGB(160, 160, 160) })
+                    Tween(Tab.CurrentST.Btn.Icon, 0.2, { ImageColor3 = Color3.fromRGB(160, 160, 160) })
                     local oldLine = Tab.CurrentST.Btn:FindFirstChildOfClass("Frame")
                     if oldLine then Tween(oldLine, 0.2, { BackgroundTransparency = 1 }) end
                 end
                 Tab.CurrentST = SubTab
                 SPage.Visible = true
                 Tween(SText, 0.2, { TextColor3 = Color3.new(1, 1, 1) })
-                Tween(SIco, 0.2, { TextColor3 = Library.Accent })
+                Tween(SIco, 0.2, { ImageColor3 = Library.Accent })
                 Tween(SLine, 0.2, { BackgroundTransparency = 0 })
             end
             SClick.MouseButton1Click:Connect(function() SubTab:Select() end)
