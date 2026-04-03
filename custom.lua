@@ -512,18 +512,5 @@ function Library:CreateWindow(title)
     return Window
 end
 
--- ============================================
--- KURBY HUB v4.0 — Lucide Icons (Verified)
--- ============================================
-local Window = Library:CreateWindow("Kurby Hub")
-
---         Tab Name       Lucide Icon Name
-local HomeTab   = Window:CreateTab("Home",     "home")        -- House
-local FarmTab   = Window:CreateTab("Farming",  "swords")      -- Swords
-local UserTab   = Window:CreateTab("Account",  "account")     -- User
-local VisTab    = Window:CreateTab("Visuals",  "eye")         -- Eye
-local TeleTab   = Window:CreateTab("Teleport", "map-pin")     -- Map Pin
-local StatsTab  = Window:CreateTab("Stats",    "bar-chart-2") -- Bar Chart
-local ConfigTab = Window:CreateTab("Config",   "settings")    -- Cogwheel
 
 return Library
