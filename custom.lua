@@ -40,20 +40,48 @@ local function Tween(obj, time, props)
     TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), props):Play()
 end
 
-function Library:MakeDraggable(gui)
-    local drag, dStart, sPos
-    gui.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 and not Library._blockDrag then
-            drag = true; dStart = i.Position; sPos = gui.Position
-            i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then drag = false end end)
+-- Returns true if a drag actually occurred (distance ≥ threshold)
+function Library:MakeDraggable(handle, target)
+    target = target or handle       -- what actually moves
+    local THRESHOLD = 4             -- pixels before drag is considered real
+    local dragging, didDrag = false, false
+    local dStart, sPos
+
+    handle.InputBegan:Connect(function(i)
+        if (i.UserInputType == Enum.UserInputType.MouseButton1 or
+            i.UserInputType == Enum.UserInputType.Touch) and not Library._blockDrag then
+            dragging = true
+            didDrag  = false
+            dStart   = i.Position
+            sPos     = target.Position
         end
     end)
+
+    handle.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or
+           i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+
     UIS.InputChanged:Connect(function(i)
-        if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or
+                         i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - dStart
-            gui.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, sPos.Y.Offset + d.Y)
+            if not didDrag and (math.abs(d.X) >= THRESHOLD or math.abs(d.Y) >= THRESHOLD) then
+                didDrag = true
+            end
+            if didDrag then
+                target.Position = UDim2.new(
+                    sPos.X.Scale, sPos.X.Offset + d.X,
+                    sPos.Y.Scale, sPos.Y.Offset + d.Y
+                )
+            end
         end
     end)
+
+    -- expose flag so callers can suppress their own click handlers
+    return function() local v = didDrag; didDrag = false; return v end
 end
 
 function Library:GetIcon(name)
@@ -119,6 +147,25 @@ function Library:CreateWindow(title)
         Size = UDim2.new(1, -65, 1, 0)
     })
 
+    -- ── Drag bar: only the sidebar + top strip can move the window ────────
+    local DragBar = Create("Frame", {
+        Name = "DragBar",
+        Parent = Main,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 48),   -- same height as the header
+        ZIndex = 0
+    })
+    -- also let the sidebar title area act as a drag handle
+    local DragSide = Create("Frame", {
+        Name = "DragSide",
+        Parent = Sidebar,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 36),
+        ZIndex = 10
+    })
+    local wasDragging = Library:MakeDraggable(DragBar, Main)
+    Library:MakeDraggable(DragSide, Main)
+
     local Header = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 48) })
     Create("TextLabel", {
         Parent = Header,
@@ -132,12 +179,35 @@ function Library:CreateWindow(title)
         TextXAlignment = "Left"
     })
 
-    local SubTabBar = Create("Frame", { Parent = Header, BackgroundTransparency = 1, Position = UDim2.new(0, 200, 0, 0), Size = UDim2.new(1, -200, 1, 0) })
+    -- ── X close button ───────────────────────────────────────────────────
+    local CloseBtn = Create("TextButton", {
+        Name = "CloseBtn",
+        Parent = Header,
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundColor3 = Color3.fromRGB(200, 55, 55),
+        Position = UDim2.new(1, -12, 0.5, 0),
+        Size = UDim2.new(0, 22, 0, 22),
+        Font = "GothamBold",
+        Text = "✕",
+        TextColor3 = Color3.new(1, 1, 1),
+        TextSize = 12,
+        AutoButtonColor = false,
+        ZIndex = 10
+    })
+    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = CloseBtn })
+    CloseBtn.MouseEnter:Connect(function() Tween(CloseBtn, 0.15, { BackgroundColor3 = Color3.fromRGB(255, 70, 70) }) end)
+    CloseBtn.MouseLeave:Connect(function() Tween(CloseBtn, 0.15, { BackgroundColor3 = Color3.fromRGB(200, 55, 55) }) end)
+    CloseBtn.MouseButton1Click:Connect(function()
+        if wasDragging() then return end   -- suppress click after drag
+        toggled = false
+        Main.Visible = false
+    end)
+
+    local SubTabBar = Create("Frame", { Parent = Header, BackgroundTransparency = 1, Position = UDim2.new(0, 200, 0, 0), Size = UDim2.new(1, -240, 1, 0) })
     Create("UIListLayout", { Parent = SubTabBar, FillDirection = "Horizontal", Padding = UDim.new(0, 16), VerticalAlignment = "Center" })
     Create("Frame", { Parent = Header, BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderSizePixel = 0, Position = UDim2.new(0, 0, 1, -1), Size = UDim2.new(1, 0, 0, 1) })
 
     local Folder = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 48), Size = UDim2.new(1, 0, 1, -48) })
-    Library:MakeDraggable(Main)
 
     -- Mobile detection & toggle
     local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
@@ -179,9 +249,12 @@ function Library:CreateWindow(title)
             TextSize = 20,
             ZIndex = 101
         })
-        Library:MakeDraggable(ToggleBtn)
-        ToggleBtn.MouseButton1Click:Connect(function()
-            toggleUI()
+        local wasDraggingBtn = Library:MakeDraggable(ToggleBtn)
+        ToggleBtn.InputEnded:Connect(function(i)
+            if (i.UserInputType == Enum.UserInputType.Touch or
+                i.UserInputType == Enum.UserInputType.MouseButton1) and not wasDraggingBtn() then
+                toggleUI()
+            end
         end)
     end
 
