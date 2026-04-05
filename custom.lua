@@ -188,7 +188,7 @@ function Library:CreateWindow(title)
         Position = UDim2.new(1, -12, 0.5, 0),
         Size = UDim2.new(0, 22, 0, 22),
         Font = "GothamBold",
-        Text = "✕",
+        Text = "X",
         TextColor3 = Color3.new(1, 1, 1),
         TextSize = 12,
         AutoButtonColor = false,
