@@ -112,7 +112,7 @@ function Library:CreateWindow(title)
     local Sidebar = Create("Frame", {
         Parent = Main,
         BackgroundColor3 = Color3.fromRGB(13, 13, 13),
-        Size = UDim2.new(0, 65, 1, 0)
+        Size = UDim2.new(0, 50, 1, 0)
     })
     Create("UIStroke", { Color = Color3.fromRGB(35, 35, 35), ApplyStrokeMode = "Border", Parent = Sidebar })
 
@@ -143,8 +143,8 @@ function Library:CreateWindow(title)
     local Container = Create("Frame", {
         Parent = Main,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 65, 0, 0),
-        Size = UDim2.new(1, -65, 1, 0)
+        Position = UDim2.new(0, 50, 0, 0),
+        Size = UDim2.new(1, -50, 1, 0)
     })
 
     -- ── Drag bar: only the sidebar + top strip can move the window ────────
