@@ -340,7 +340,7 @@ function Library:CreateWindow(config)
         TabBtn.MouseButton1Click:Connect(function() Tab:Select() end)
 
         function Tab:CreateSection(secName)
-            local SecContent = Create("Frame", { Parent = Page, BackgroundTransparency = 1, Size = UDim2.new(0.94, 0, 0, 0), AutomaticSize = "Y" })
+            local SecContent = Create("Frame", { Parent = Page, BackgroundTransparency = 1, Size = UDim2.new(0.94, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y })
             local SecList = Create("UIListLayout", { Parent = SecContent, Padding = UDim.new(0, 8) })
 
             local SecTitle = Create("TextLabel", {
@@ -512,6 +512,8 @@ function Library:CreateWindow(config)
             task.wait(0.5); N:Destroy()
         end)
     end
+
+    Library.Notify = function(self, ...) return Window:Notify(...) end
 
     return Window
 end
