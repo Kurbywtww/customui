@@ -66,13 +66,13 @@ end
 function Library:CreateWindow(config)
     local title = type(config) == "table" and config.Title or config or "Snowy Hub"
     local version = type(config) == "table" and config.Footer or "v6"
-    
+
     local ScreenGui = Create("ScreenGui", {
         Name = "SnowyHub",
         Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or CoreGui,
         ResetOnSpawn = false
     })
-    
+
     if getgenv then
         if getgenv()._SnowyUI then getgenv()._SnowyUI:Destroy() end
         getgenv()._SnowyUI = ScreenGui
@@ -94,7 +94,7 @@ function Library:CreateWindow(config)
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 0, 60)
     })
-    
+
     -- Logo Icon
     local LogoContainer = Create("Frame", {
         Parent = Header,
@@ -103,7 +103,7 @@ function Library:CreateWindow(config)
         Size = UDim2.new(0, 36, 0, 36)
     })
     Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = LogoContainer })
-    
+
     local snowIcon = Library:GetIcon("snowflake")
     Create("ImageLabel", {
         Parent = LogoContainer,
@@ -128,7 +128,7 @@ function Library:CreateWindow(config)
         TextSize = 18,
         TextXAlignment = "Left"
     })
-    
+
     Create("TextLabel", {
         Parent = Header,
         BackgroundTransparency = 1,
@@ -265,7 +265,7 @@ function Library:CreateWindow(config)
 
     function Window:CreateTab(name, iconName)
         local tabIconData = Library:GetIcon(iconName or "home")
-        
+
         local TabBtn = Create("TextButton", {
             Name = name .. "Tab",
             Parent = Nav,
@@ -281,6 +281,7 @@ function Library:CreateWindow(config)
         local TabStroke = Create("UIStroke", { Color = Color3.fromRGB(35, 45, 75), Parent = TabBtn })
 
         local TabIcon = Create("ImageLabel", {
+            Name = "Icon",
             Parent = TabBtn,
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 10, 0.5, -9),
@@ -292,6 +293,7 @@ function Library:CreateWindow(config)
         })
 
         local TabIndicator = Create("Frame", {
+            Name = "TabIndicator",
             Parent = TabBtn,
             BackgroundColor3 = Library.Accent,
             BorderSizePixel = 0,
@@ -312,7 +314,7 @@ function Library:CreateWindow(config)
         })
         local PageList = Create("UIListLayout", { Parent = Page, Padding = UDim.new(0, 12), HorizontalAlignment = "Center" })
         Create("UIPadding", { Parent = Page, PaddingTop = UDim.new(0, 15), PaddingBottom = UDim.new(0, 15) })
-        
+
         PageList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             Page.CanvasSize = UDim2.new(0, 0, 0, PageList.AbsoluteContentSize.Y + 30)
         end)
@@ -340,7 +342,7 @@ function Library:CreateWindow(config)
         function Tab:CreateSection(secName)
             local SecContent = Create("Frame", { Parent = Page, BackgroundTransparency = 1, Size = UDim2.new(0.94, 0, 0, 0), AutomaticSize = "Y" })
             local SecList = Create("UIListLayout", { Parent = SecContent, Padding = UDim.new(0, 8) })
-            
+
             local SecTitle = Create("TextLabel", {
                 Parent = SecContent,
                 BackgroundTransparency = 1,
@@ -358,24 +360,24 @@ function Library:CreateWindow(config)
                 local F = Create("Frame", { Parent = SecContent, BackgroundColor3 = Color3.fromRGB(12, 15, 30), Size = UDim2.new(1, 0, 0, 44) })
                 Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = F })
                 Create("UIStroke", { Color = Color3.fromRGB(25, 30, 50), Parent = F })
-                
+
                 Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 0), Size = UDim2.new(1, -70, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(220, 220, 230), TextSize = 14, TextXAlignment = "Left" })
-                
+
                 local O = Create("Frame", { Parent = F, AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Color3.fromRGB(25, 30, 50), Position = UDim2.new(1, -15, 0.5, 0), Size = UDim2.new(0, 40, 0, 20) })
                 Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = O })
                 local I = Create("Frame", { Parent = O, BackgroundColor3 = Color3.new(1, 1, 1), Position = UDim2.new(0, 3, 0.5, -7), Size = UDim2.new(0, 14, 0, 14) })
                 Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = I })
-                
+
                 local t = def or false
                 local function u() 
                     Tween(O, 0.2, { BackgroundColor3 = t and Library.Accent or Color3.fromRGB(25, 30, 50) })
                     Tween(I, 0.2, { Position = t and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7) })
                     if cb then cb(t) end 
                 end
-                
+
                 local Click = Create("TextButton", { Parent = F, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Text = "" })
                 Click.MouseButton1Click:Connect(function() t = not t; u() end)
-                
+
                 u()
                 return { Set = function(_, v) t = v; u() end }
             end
@@ -384,7 +386,7 @@ function Library:CreateWindow(config)
                 local B = Create("TextButton", { Parent = SecContent, BackgroundColor3 = Color3.fromRGB(20, 25, 45), Size = UDim2.new(1, 0, 0, 40), Font = "GothamBold", Text = n, TextColor3 = Color3.fromRGB(220, 220, 230), TextSize = 14, AutoButtonColor = false })
                 Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = B })
                 Create("UIStroke", { Color = Color3.fromRGB(40, 50, 80), Parent = B })
-                
+
                 B.MouseEnter:Connect(function() Tween(B, 0.2, { BackgroundColor3 = Color3.fromRGB(30, 40, 70) }) end)
                 B.MouseLeave:Connect(function() Tween(B, 0.2, { BackgroundColor3 = Color3.fromRGB(20, 25, 45) }) end)
                 B.MouseButton1Click:Connect(function() if cb then cb() end end)
@@ -394,15 +396,15 @@ function Library:CreateWindow(config)
                 local F = Create("Frame", { Parent = SecContent, BackgroundColor3 = Color3.fromRGB(12, 15, 30), Size = UDim2.new(1, 0, 0, 55) })
                 Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = F })
                 Create("UIStroke", { Color = Color3.fromRGB(25, 30, 50), Parent = F })
-                
+
                 Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 10), Size = UDim2.new(1, -80, 0, 20), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(220, 220, 230), TextSize = 13, TextXAlignment = "Left" })
                 local Val = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(1, -70, 0, 10), Size = UDim2.new(0, 55, 0, 20), Font = "GothamBold", Text = tostring(def or min), TextColor3 = Library.Accent, TextSize = 13, TextXAlignment = "Right" })
-                
+
                 local Bar = Create("Frame", { Parent = F, BackgroundColor3 = Color3.fromRGB(25, 30, 50), Position = UDim2.new(0, 15, 0, 38), Size = UDim2.new(1, -30, 0, 6) })
                 Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Bar })
                 local Fill = Create("Frame", { Parent = Bar, BackgroundColor3 = Library.Accent, Size = UDim2.new(((def or min) - min) / (max - min), 0, 1, 0) })
                 Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Fill })
-                
+
                 local dragging = false
                 local function move(input)
                     local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
@@ -411,11 +413,11 @@ function Library:CreateWindow(config)
                     Val.Text = tostring(val)
                     if cb then cb(val) end
                 end
-                
+
                 Bar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; move(i) end end)
                 UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
                 UIS.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then move(i) end end)
-                
+
                 return { Set = function(_, v) local p = (v - min)/(max - min); Fill.Size = UDim2.new(p, 0, 1, 0); Val.Text = tostring(v); if cb then cb(v) end end }
             end
 
@@ -423,13 +425,13 @@ function Library:CreateWindow(config)
                 local F = Create("Frame", { Parent = SecContent, BackgroundColor3 = Color3.fromRGB(12, 15, 30), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true })
                 Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = F })
                 Create("UIStroke", { Color = Color3.fromRGB(25, 30, 50), Parent = F })
-                
+
                 local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 0), Size = UDim2.new(1, -40, 0, 42), Font = "Gotham", Text = n .. ": " .. (def or "None"), TextColor3 = Color3.fromRGB(220, 220, 230), TextSize = 13, TextXAlignment = "Left" })
                 local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(1, -30, 0, 0), Size = UDim2.new(0, 20, 0, 42), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(150, 150, 160), TextSize = 12 })
-                
+
                 local ItemList = Create("Frame", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 5, 0, 42), Size = UDim2.new(1, -10, 0, 0) })
                 local IL = Create("UIListLayout", { Parent = ItemList, Padding = UDim.new(0, 4) })
-                
+
                 local opened = false
                 local function refresh(list)
                     for _, c in next, ItemList:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
@@ -446,7 +448,7 @@ function Library:CreateWindow(config)
                     end
                 end
                 refresh(items or {})
-                
+
                 local Click = Create("TextButton", { Parent = F, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 42), Text = "" })
                 Click.MouseButton1Click:Connect(function()
                     opened = not opened
@@ -454,7 +456,7 @@ function Library:CreateWindow(config)
                     local h = opened and (42 + IL.AbsoluteContentSize.Y + 10) or 42
                     Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
                 end)
-                
+
                 return { Refresh = function(_, list) refresh(list) end }
             end
 
@@ -462,17 +464,18 @@ function Library:CreateWindow(config)
                 local F = Create("Frame", { Parent = SecContent, BackgroundColor3 = Color3.fromRGB(12, 15, 30), Size = UDim2.new(1, 0, 0, 44) })
                 Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = F })
                 Create("UIStroke", { Color = Color3.fromRGB(25, 30, 50), Parent = F })
-                
+
                 Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 15, 0, 0), Size = UDim2.new(0.4, 0, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(220, 220, 230), TextSize = 13, TextXAlignment = "Left" })
                 local Box = Create("TextBox", { Parent = F, BackgroundColor3 = Color3.fromRGB(20, 25, 45), AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -10, 0.5, 0), Size = UDim2.new(0.5, -10, 0, 26), Font = "Gotham", Text = "", PlaceholderText = placeholder or "Enter...", TextColor3 = Color3.new(1, 1, 1), PlaceholderColor3 = Color3.fromRGB(100, 100, 110), TextSize = 13, ClearTextOnFocus = false })
                 Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = Box })
-                
+
                 Box.FocusLost:Connect(function(enter) if enter and cb then cb(Box.Text) end end)
                 return { Set = function(_,v) Box.Text = v end }
             end
 
             function S:CreateLabel(n)
                 local Lbl = Create("TextLabel", { Parent = SecContent, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 20), Font = "Gotham", Text = " • " .. n, TextColor3 = Color3.fromRGB(160, 160, 170), TextSize = 12, TextXAlignment = "Left" })
+
                 return { Set = function(_, v) Lbl.Text = " • " .. v end }
             end
 
@@ -499,10 +502,10 @@ function Library:CreateWindow(config)
         local N = Create("Frame", { Parent = ScreenGui, BackgroundColor3 = Color3.fromRGB(10, 12, 25), Position = UDim2.new(1, 20, 1, -100), Size = UDim2.new(0, 240, 0, 60) })
         Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = N })
         Create("UIStroke", { Color = Library.Accent, Parent = N })
-        
+
         Create("TextLabel", { Parent = N, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 8), Size = UDim2.new(1, -24, 0, 20), Font = "GothamBold", Text = "NOTIFICATION", TextColor3 = Library.Accent, TextSize = 12, TextXAlignment = "Left" })
         Create("TextLabel", { Parent = N, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 28), Size = UDim2.new(1, -24, 0, 24), Font = "Gotham", Text = text, TextColor3 = Color3.new(1, 1, 1), TextSize = 13, TextXAlignment = "Left", TextWrapped = true })
-        
+
         Tween(N, 0.5, { Position = UDim2.new(1, -260, 1, -100) })
         task.delay(dur or 4, function()
             Tween(N, 0.5, { Position = UDim2.new(1, 20, 1, -100) })
