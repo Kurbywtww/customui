@@ -102,8 +102,8 @@ function Library:CreateWindow(title)
     local Main = Create("Frame", {
         Parent = ScreenGui,
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
-        Position = UDim2.new(0.5, -300, 0.5, -220),
-        Size = UDim2.new(0, 600, 0, 440)
+        Position = UDim2.new(0.5, -300*UI_SCALE, 0.5, -220*UI_SCALE),
+        Size = UDim2.new(0, 600*UI_SCALE, 0, 440*UI_SCALE)
     })
     Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = Main })
     Create("UIStroke", { Color = Color3.fromRGB(45, 45, 45), Parent = Main })
@@ -112,7 +112,7 @@ function Library:CreateWindow(title)
     local Sidebar = Create("Frame", {
         Parent = Main,
         BackgroundColor3 = Color3.fromRGB(13, 13, 13),
-        Size = UDim2.new(0, 50, 1, 0)
+        Size = UDim2.new(0, 50*UI_SCALE, 1, 0)
     })
     Create("UIStroke", { Color = Color3.fromRGB(35, 35, 35), ApplyStrokeMode = "Border", Parent = Sidebar })
 
@@ -143,7 +143,7 @@ function Library:CreateWindow(title)
     local Container = Create("Frame", {
         Parent = Main,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 50, 0, 0),
+        Position = UDim2.new(0, 50*UI_SCALE, 0, 0),
         Size = UDim2.new(1, -50, 1, 0)
     })
 
@@ -212,6 +212,7 @@ function Library:CreateWindow(title)
     -- Mobile detection & toggle
     local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
     local toggled = true
+    local UI_SCALE = isMobile and 0.6 or 1.0
 
     local function toggleUI()
         toggled = not toggled
