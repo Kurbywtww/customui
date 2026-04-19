@@ -7,8 +7,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = { Toggled = true, Accent = Color3.fromRGB(160, 60, 255), _blockDrag = false }
 
--- Lucide Icons via latte-soft/lucide-roblox (48px sprite-sheet data)
--- Format: { assetId, rectW, rectH, rectOffsetX, rectOffsetY }
 local Icons = {
     home          = { 16898613509, 48, 48, 820, 147 },
     flame         = { 16898613353, 48, 48, 967, 306 },
@@ -40,7 +38,6 @@ local function Tween(obj, time, props)
     TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), props):Play()
 end
 
--- Returns true if a drag actually occurred (distance ≥ threshold)
 function Library:MakeDraggable(handle, target)
     target = target or handle       -- what actually moves
     local THRESHOLD = 4             -- pixels before drag is considered real
@@ -80,7 +77,6 @@ function Library:MakeDraggable(handle, target)
         end
     end)
 
-    -- expose flag so callers can suppress their own click handlers
     return function() local v = didDrag; didDrag = false; return v end
 end
 
@@ -89,6 +85,10 @@ function Library:GetIcon(name)
 end
 
 function Library:CreateWindow(title)
+    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    local UI_SCALE = isMobile and 0.6 or 1.0
+    local toggled  = true
+
     local ScreenGui = Create("ScreenGui", {
         Name = "KurbyLib",
         Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or CoreGui,
@@ -209,10 +209,7 @@ function Library:CreateWindow(title)
 
     local Folder = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 48), Size = UDim2.new(1, 0, 1, -48) })
 
-    -- Mobile detection & toggle
-    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
-    local toggled = true
-    local UI_SCALE = isMobile and 0.6 or 1.0
+    -- Toggle helpers (isMobile / UI_SCALE / toggled defined at top of function)
 
     local function toggleUI()
         toggled = not toggled
