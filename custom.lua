@@ -292,8 +292,19 @@ function Library:CreateWindow(title)
                 Position = UDim2.new(0, 0, 1, -2),
                 Size = UDim2.new(1, 0, 0, 2)
             })
-            local SPage = Create("ScrollingFrame", { Parent = Folder, BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0), Visible = false, ScrollBarThickness = 2, ScrollBarImageColor3 = Library.Accent })
-            Create("UIListLayout", { Parent = SPage, Padding = UDim.new(0, 10), HorizontalAlignment = "Center" })
+            local SPage = Create("ScrollingFrame", { 
+                Parent = Folder, 
+                BackgroundTransparency = 1, 
+                BorderSizePixel = 0, 
+                Size = UDim2.new(1, 0, 1, 0), 
+                Visible = false, 
+                ScrollBarThickness = isMobile and 4 or 2, 
+                ScrollBarImageColor3 = Library.Accent,
+                AutomaticCanvasSize = "Y",
+                CanvasSize = UDim2.new(0, 0, 0, 0),
+                ScrollingDirection = "Y"
+            })
+            Create("UIListLayout", { Parent = SPage, Padding = UDim.new(0, 10), HorizontalAlignment = "Center", Name = "Layout" })
             Create("UIPadding", { Parent = SPage, PaddingTop = UDim.new(0, 14), PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) })
 
             local SubTab = { Page = SPage, Btn = SBtn }
@@ -324,7 +335,6 @@ function Library:CreateWindow(title)
                 local L = Create("UIListLayout", { Parent = Content, Padding = UDim.new(0, 6) })
                 L:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                     Content.Size = UDim2.new(1, 0, 0, L.AbsoluteContentSize.Y)
-                    SPage.CanvasSize = UDim2.new(0, 0, 0, SPage.UIListLayout.AbsoluteContentSize.Y + 40)
                 end)
                 local S = {}
 
