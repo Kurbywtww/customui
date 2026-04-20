@@ -155,35 +155,8 @@ function Library:CreateWindow(title)
         end
     end)
 
-    -- Mobile: Floating toggle button
-    if isMobile then
-        local ToggleBtn = Create("ImageButton", {
-            Name = "MobileToggle",
-            Parent = ScreenGui,
-            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-            Position = UDim2.new(1, -60, 1, -60),
-            Size = UDim2.new(0, 44, 0, 44),
-            Image = "",
-            AutoButtonColor = false,
-            ZIndex = 100
-        })
-        Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = ToggleBtn })
-        Create("UIStroke", { Color = Library.Accent, Thickness = 2, Parent = ToggleBtn })
-        Create("TextLabel", {
-            Parent = ToggleBtn,
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 1, 0),
-            Font = "GothamBold",
-            Text = "K",
-            TextColor3 = Library.Accent,
-            TextSize = 20,
-            ZIndex = 101
-        })
-        Library:MakeDraggable(ToggleBtn)
-        ToggleBtn.MouseButton1Click:Connect(function()
-            toggleUI()
-        end)
-    end
+    -- Mobile detection (Keybind still active via RightShift)
+    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
 
     local Window = { Current = nil }
 
@@ -340,7 +313,7 @@ function Library:CreateWindow(title)
 
                 -- TOGGLE
                 function S:CreateToggle(n, def, cb)
-                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
+                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
                     Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -64, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
                     local O = Create("Frame", { Parent = F, AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Color3.fromRGB(35, 35, 35), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.new(0, 36, 0, 18) })
@@ -349,7 +322,7 @@ function Library:CreateWindow(title)
                     Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = I })
                     local t = def or false
                     local function u() Tween(O, 0.2, { BackgroundColor3 = t and Library.Accent or Color3.fromRGB(35, 35, 35) }); Tween(I, 0.2, { Position = t and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7) }); if cb then cb(t) end end
-                    F.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then t = not t; u() end end)
+                    F.MouseButton1Click:Connect(function() t = not t; u() end)
                     u()
                     return { Set = function(_, v) t = v; u() end }
                 end
@@ -394,7 +367,7 @@ function Library:CreateWindow(title)
                 -- DROPDOWN
                 function S:CreateDropdown(n, items, def, cb)
                     items = items or {}; cb = cb or function() end
-                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true })
+                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true, Text = "", AutoButtonColor = false })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
                     local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = def and (n .. ": " .. tostring(def)) or n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
                     local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 20, 0, 42), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
@@ -418,13 +391,11 @@ function Library:CreateWindow(title)
                         end
                     end
                     refresh(items)
-                    F.InputBegan:Connect(function(i)
-                        if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and i.Position.Y < F.AbsolutePosition.Y + 42 then
-                            opened = not opened
-                            Arrow.Text = opened and "^" or "v"
-                            local h = opened and (42 + ItemList.UIListLayout.AbsoluteContentSize.Y + 8) or 42
-                            Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
-                        end
+                    F.MouseButton1Click:Connect(function()
+                        opened = not opened
+                        Arrow.Text = opened and "^" or "v"
+                        local h = opened and (42 + ItemList.UIListLayout.AbsoluteContentSize.Y + 8) or 42
+                        Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
                     end)
                     return { Refresh = function(_, list) refresh(list) end }
                 end
