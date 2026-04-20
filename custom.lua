@@ -7,6 +7,8 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = { Toggled = true, Accent = Color3.fromRGB(160, 60, 255), _blockDrag = false }
 
+-- Lucide Icons via latte-soft/lucide-roblox (48px sprite-sheet data)
+-- Format: { assetId, rectW, rectH, rectOffsetX, rectOffsetY }
 local Icons = {
     home          = { 16898613509, 48, 48, 820, 147 },
     flame         = { 16898613353, 48, 48, 967, 306 },
@@ -38,46 +40,20 @@ local function Tween(obj, time, props)
     TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), props):Play()
 end
 
-function Library:MakeDraggable(handle, target)
-    target = target or handle       -- what actually moves
-    local THRESHOLD = 4             -- pixels before drag is considered real
-    local dragging, didDrag = false, false
-    local dStart, sPos
-
-    handle.InputBegan:Connect(function(i)
-        if (i.UserInputType == Enum.UserInputType.MouseButton1 or
-            i.UserInputType == Enum.UserInputType.Touch) and not Library._blockDrag then
-            dragging = true
-            didDrag  = false
-            dStart   = i.Position
-            sPos     = target.Position
+function Library:MakeDraggable(gui)
+    local drag, dStart, sPos
+    gui.InputBegan:Connect(function(i)
+        if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and not Library._blockDrag then
+            drag = true; dStart = i.Position; sPos = gui.Position
+            i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then drag = false end end)
         end
     end)
-
-    handle.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or
-           i.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-
     UIS.InputChanged:Connect(function(i)
-        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or
-                         i.UserInputType == Enum.UserInputType.Touch) then
+        if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - dStart
-            if not didDrag and (math.abs(d.X) >= THRESHOLD or math.abs(d.Y) >= THRESHOLD) then
-                didDrag = true
-            end
-            if didDrag then
-                target.Position = UDim2.new(
-                    sPos.X.Scale, sPos.X.Offset + d.X,
-                    sPos.Y.Scale, sPos.Y.Offset + d.Y
-                )
-            end
+            gui.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, startPos and startPos.Y.Offset + d.Y or sPos.Y.Offset + d.Y)
         end
     end)
-
-    return function() local v = didDrag; didDrag = false; return v end
 end
 
 function Library:GetIcon(name)
@@ -85,10 +61,6 @@ function Library:GetIcon(name)
 end
 
 function Library:CreateWindow(title)
-    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
-    local UI_SCALE = isMobile and 0.6 or 1.0
-    local toggled  = true
-
     local ScreenGui = Create("ScreenGui", {
         Name = "KurbyLib",
         Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or CoreGui,
@@ -102,8 +74,8 @@ function Library:CreateWindow(title)
     local Main = Create("Frame", {
         Parent = ScreenGui,
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
-        Position = UDim2.new(0.5, -300*UI_SCALE, 0.5, -220*UI_SCALE),
-        Size = UDim2.new(0, 600*UI_SCALE, 0, 440*UI_SCALE)
+        Position = UDim2.new(0.5, -300, 0.5, -220),
+        Size = UDim2.new(0, 600, 0, 440)
     })
     Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = Main })
     Create("UIStroke", { Color = Color3.fromRGB(45, 45, 45), Parent = Main })
@@ -112,7 +84,7 @@ function Library:CreateWindow(title)
     local Sidebar = Create("Frame", {
         Parent = Main,
         BackgroundColor3 = Color3.fromRGB(13, 13, 13),
-        Size = UDim2.new(0, 50*UI_SCALE, 1, 0)
+        Size = UDim2.new(0, 65, 1, 0)
     })
     Create("UIStroke", { Color = Color3.fromRGB(35, 35, 35), ApplyStrokeMode = "Border", Parent = Sidebar })
 
@@ -143,28 +115,9 @@ function Library:CreateWindow(title)
     local Container = Create("Frame", {
         Parent = Main,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 50*UI_SCALE, 0, 0),
-        Size = UDim2.new(1, -50, 1, 0)
+        Position = UDim2.new(0, 65, 0, 0),
+        Size = UDim2.new(1, -65, 1, 0)
     })
-
-    -- ── Drag bar: only the sidebar + top strip can move the window ────────
-    local DragBar = Create("Frame", {
-        Name = "DragBar",
-        Parent = Main,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 48),   -- same height as the header
-        ZIndex = 0
-    })
-    -- also let the sidebar title area act as a drag handle
-    local DragSide = Create("Frame", {
-        Name = "DragSide",
-        Parent = Sidebar,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 36),
-        ZIndex = 10
-    })
-    local wasDragging = Library:MakeDraggable(DragBar, Main)
-    Library:MakeDraggable(DragSide, Main)
 
     local Header = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 48) })
     Create("TextLabel", {
@@ -179,37 +132,16 @@ function Library:CreateWindow(title)
         TextXAlignment = "Left"
     })
 
-    -- ── X close button ───────────────────────────────────────────────────
-    local CloseBtn = Create("TextButton", {
-        Name = "CloseBtn",
-        Parent = Header,
-        AnchorPoint = Vector2.new(1, 0.5),
-        BackgroundColor3 = Color3.fromRGB(200, 55, 55),
-        Position = UDim2.new(1, -12, 0.5, 0),
-        Size = UDim2.new(0, 22, 0, 22),
-        Font = "GothamBold",
-        Text = "X",
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 12,
-        AutoButtonColor = false,
-        ZIndex = 10
-    })
-    Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = CloseBtn })
-    CloseBtn.MouseEnter:Connect(function() Tween(CloseBtn, 0.15, { BackgroundColor3 = Color3.fromRGB(255, 70, 70) }) end)
-    CloseBtn.MouseLeave:Connect(function() Tween(CloseBtn, 0.15, { BackgroundColor3 = Color3.fromRGB(200, 55, 55) }) end)
-    CloseBtn.MouseButton1Click:Connect(function()
-        if wasDragging() then return end   -- suppress click after drag
-        toggled = false
-        Main.Visible = false
-    end)
-
-    local SubTabBar = Create("Frame", { Parent = Header, BackgroundTransparency = 1, Position = UDim2.new(0, 200, 0, 0), Size = UDim2.new(1, -240, 1, 0) })
+    local SubTabBar = Create("Frame", { Parent = Header, BackgroundTransparency = 1, Position = UDim2.new(0, 200, 0, 0), Size = UDim2.new(1, -200, 1, 0) })
     Create("UIListLayout", { Parent = SubTabBar, FillDirection = "Horizontal", Padding = UDim.new(0, 16), VerticalAlignment = "Center" })
     Create("Frame", { Parent = Header, BackgroundColor3 = Color3.fromRGB(30, 30, 30), BorderSizePixel = 0, Position = UDim2.new(0, 0, 1, -1), Size = UDim2.new(1, 0, 0, 1) })
 
     local Folder = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 48), Size = UDim2.new(1, 0, 1, -48) })
+    Library:MakeDraggable(Main)
 
-    -- Toggle helpers (isMobile / UI_SCALE / toggled defined at top of function)
+    -- Mobile detection & toggle
+    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    local toggled = true
 
     local function toggleUI()
         toggled = not toggled
@@ -247,12 +179,9 @@ function Library:CreateWindow(title)
             TextSize = 20,
             ZIndex = 101
         })
-        local wasDraggingBtn = Library:MakeDraggable(ToggleBtn)
-        ToggleBtn.InputEnded:Connect(function(i)
-            if (i.UserInputType == Enum.UserInputType.Touch or
-                i.UserInputType == Enum.UserInputType.MouseButton1) and not wasDraggingBtn() then
-                toggleUI()
-            end
+        Library:MakeDraggable(ToggleBtn)
+        ToggleBtn.MouseButton1Click:Connect(function()
+            toggleUI()
         end)
     end
 
@@ -297,8 +226,8 @@ function Library:CreateWindow(title)
             Name = "Icon",
             Parent = Btn,
             BackgroundTransparency = 1,
-            Position = UDim2.new(0.5, -12, 0.5, -12),
-            Size = UDim2.new(0, 24, 0, 24),
+            Position = UDim2.new(0.5, -18, 0.5, -18),
+            Size = UDim2.new(0, 36, 0, 36),
             Image = "rbxassetid://" .. iconData[1],
             ImageRectSize = Vector2.new(iconData[2], iconData[3]),
             ImageRectOffset = Vector2.new(iconData[4], iconData[5]),
@@ -345,8 +274,8 @@ function Library:CreateWindow(title)
                 Name = "Icon",
                 Parent = SBtn,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 0, 0.5, -8),
-                Size = UDim2.new(0, 16, 0, 16),
+                Position = UDim2.new(0, 0, 0.5, -10),
+                Size = UDim2.new(0, 20, 0, 20),
                 Image = "rbxassetid://" .. stIconData[1],
                 ImageRectSize = Vector2.new(stIconData[2], stIconData[3]),
                 ImageRectOffset = Vector2.new(stIconData[4], stIconData[5]),
@@ -357,7 +286,7 @@ function Library:CreateWindow(title)
                 Name = "Label",
                 Parent = SBtn,
                 BackgroundTransparency = 1,
-                Position = UDim2.new(0, 20, 0, 0),
+                Position = UDim2.new(0, 22, 0, 0),
                 Size = UDim2.new(0, 0, 1, 0),
                 AutomaticSize = "X",
                 Font = "Gotham",
@@ -420,7 +349,7 @@ function Library:CreateWindow(title)
                     Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = I })
                     local t = def or false
                     local function u() Tween(O, 0.2, { BackgroundColor3 = t and Library.Accent or Color3.fromRGB(35, 35, 35) }); Tween(I, 0.2, { Position = t and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7) }); if cb then cb(t) end end
-                    F.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then t = not t; u() end end)
+                    F.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then t = not t; u() end end)
                     u()
                     return { Set = function(_, v) t = v; u() end }
                 end
@@ -465,142 +394,39 @@ function Library:CreateWindow(title)
                 -- DROPDOWN
                 function S:CreateDropdown(n, items, def, cb)
                     items = items or {}; cb = cb or function() end
-                    local selected = def
-                    
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
-                    
-                    local MainBtn = Create("TextButton", { Parent = F, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
-                    local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
-                    local SelLbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -64, 0, 42), Font = "Gotham", Text = tostring(def or "None"), TextColor3 = Library.Accent, TextSize = 13, TextXAlignment = "Right" })
-                    local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0, 21), Size = UDim2.new(0, 20, 0, 20), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
-
+                    local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = def and (n .. ": " .. tostring(def)) or n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
+                    local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 20, 0, 42), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
                     local ItemList = Create("Frame", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 6, 0, 42), Size = UDim2.new(1, -12, 0, 0) })
-                    local LList = Create("UIListLayout", { Parent = ItemList, Padding = UDim.new(0, 3) })
-                    
+                    Create("UIListLayout", { Parent = ItemList, Padding = UDim.new(0, 3) })
                     local opened = false
-
-                    local function uDropdown()
-                        local h = opened and (42 + LList.AbsoluteContentSize.Y + 8) or 42
-                        Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
-                        Tween(Arrow, 0.25, { Rotation = opened and 180 or 0 })
-                    end
-
                     local function refresh(list)
-                        items = list
                         for _, c in next, ItemList:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
                         for _, item in next, list do
-                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(20, 20, 20), Size = UDim2.new(1, 0, 0, 30), Font = "Gotham", Text = tostring(item), TextColor3 = (selected == item) and Library.Accent or Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false })
+                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(22, 22, 22), Size = UDim2.new(1, 0, 0, 28), Font = "Gotham", Text = tostring(item), TextColor3 = Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false })
                             Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = Btn })
-                            
-                            Btn.MouseEnter:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(26, 26, 26) }) end)
-                            Btn.MouseLeave:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(20, 20, 20) }) end)
-
+                            Btn.MouseEnter:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(30, 30, 30) }) end)
+                            Btn.MouseLeave:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(22, 22, 22) }) end)
                             Btn.MouseButton1Click:Connect(function()
-                                selected = item
-                                SelLbl.Text = tostring(item)
+                                Lbl.Text = n .. ": " .. tostring(item)
                                 opened = false
-                                uDropdown()
+                                Arrow.Text = "v"
+                                Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, 42) })
                                 cb(item)
-                                refresh(items)
                             end)
                         end
-                        if opened then uDropdown() end
                     end
-
                     refresh(items)
-                    MainBtn.MouseButton1Click:Connect(function()
-                        opened = not opened
-                        uDropdown()
-                    end)
-
-                    return { 
-                        Refresh = refresh, 
-                        Set = function(_, v) 
-                            selected = v; 
-                            SelLbl.Text = tostring(v); 
-                            cb(v); 
-                            refresh(items) 
-                        end 
-                    }
-                end
-
-                -- MULTI DROPDOWN
-                function S:CreateMultiDropdown(n, items, def, cb)
-                    items = items or {}; cb = cb or function() end
-                    local selected = def or {}
-                    
-                    local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true })
-                    Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
-                    
-                    local MainBtn = Create("TextButton", { Parent = F, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
-                    local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
-                    local SelLbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -64, 0, 42), Font = "Gotham", Text = "None", TextColor3 = Library.Accent, TextSize = 13, TextXAlignment = "Right" })
-                    local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0, 21), Size = UDim2.new(0, 20, 0, 20), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
-
-                    local function updateText()
-                        local t = ""
-                        for i, v in next, selected do
-                            t = t .. (i == 1 and "" or ", ") .. tostring(v)
+                    F.InputBegan:Connect(function(i)
+                        if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) and i.Position.Y < F.AbsolutePosition.Y + 42 then
+                            opened = not opened
+                            Arrow.Text = opened and "^" or "v"
+                            local h = opened and (42 + ItemList.UIListLayout.AbsoluteContentSize.Y + 8) or 42
+                            Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
                         end
-                        if t == "" then t = "None" end
-                        if #t > 24 then t = #selected .. " Selected" end
-                        SelLbl.Text = t
-                    end
-                    updateText()
-
-                    local ItemList = Create("Frame", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 6, 0, 42), Size = UDim2.new(1, -12, 0, 0) })
-                    local LList = Create("UIListLayout", { Parent = ItemList, Padding = UDim.new(0, 3) })
-                    
-                    local opened = false
-
-                    local function uDropdown()
-                        local h = opened and (42 + LList.AbsoluteContentSize.Y + 8) or 42
-                        Tween(F, 0.25, { Size = UDim2.new(1, 0, 0, h) })
-                        Tween(Arrow, 0.25, { Rotation = opened and 180 or 0 })
-                    end
-
-                    local function refresh(list)
-                        items = list
-                        for _, c in next, ItemList:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
-                        for _, item in next, list do
-                            local isSelected = table.find(selected, item)
-                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(20, 20, 20), Size = UDim2.new(1, 0, 0, 30), Font = "Gotham", Text = tostring(item), TextColor3 = isSelected and Library.Accent or Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false })
-                            Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = Btn })
-                            
-                            Btn.MouseEnter:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(26, 26, 26) }) end)
-                            Btn.MouseLeave:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(20, 20, 20) }) end)
-
-                            Btn.MouseButton1Click:Connect(function()
-                                local idx = table.find(selected, item)
-                                if idx then
-                                    table.remove(selected, idx)
-                                else
-                                    table.insert(selected, item)
-                                end
-                                updateText()
-                                Tween(Btn, 0.1, { TextColor3 = table.find(selected, item) and Library.Accent or Color3.fromRGB(200, 200, 200) })
-                                cb(selected)
-                            end)
-                        end
-                        if opened then uDropdown() end
-                    end
-
-                    refresh(items)
-                    MainBtn.MouseButton1Click:Connect(function()
-                        opened = not opened
-                        uDropdown()
                     end)
-
-                    return { 
-                        Refresh = refresh, 
-                        Set = function(_, v) 
-                            selected = v; 
-                            updateText(); 
-                            cb(v); 
-                            refresh(items) 
-                        end 
-                    }
+                    return { Refresh = function(_, list) refresh(list) end }
                 end
 
                 -- TEXTBOX
