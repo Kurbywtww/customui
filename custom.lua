@@ -52,7 +52,7 @@ function Library:MakeDraggable(gui)
     UIS.InputChanged:Connect(function(i)
         if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - dStart
-            gui.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, startPos and startPos.Y.Offset + d.Y or sPos.Y.Offset + d.Y)
+            gui.Position = UDim2.new(sPos.X.Scale, sPos.X.Offset + d.X, sPos.Y.Scale, sPos.Y.Offset + d.Y)
         end
     end)
 end
@@ -81,7 +81,9 @@ function Library:CreateWindow(title)
     })
     local Scale = Create("UIScale", { Parent = Main })
     local function updateScale()
-        local view = Camera.ViewportSize
+        local Cam = workspace.CurrentCamera
+        if not Cam then return end
+        local view = Cam.ViewportSize
         local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
         local refX = isMobile and 1000 or 800
         local refY = isMobile and 700 or 550
