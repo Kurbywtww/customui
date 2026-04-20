@@ -2,6 +2,7 @@ local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
+local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -74,9 +75,19 @@ function Library:CreateWindow(title)
     local Main = Create("Frame", {
         Parent = ScreenGui,
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
-        Position = UDim2.new(0.5, -300, 0.5, -220),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
         Size = UDim2.new(0, 600, 0, 440)
     })
+    local Scale = Create("UIScale", { Parent = Main })
+    local function updateScale()
+        local view = Camera.ViewportSize
+        local scaleFactor = math.min(view.X / 700, view.Y / 500, 1)
+        Scale.Scale = scaleFactor
+    end
+    updateScale()
+    Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
+    
     Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = Main })
     Create("UIStroke", { Color = Color3.fromRGB(45, 45, 45), Parent = Main })
 
