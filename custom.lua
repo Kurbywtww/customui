@@ -82,7 +82,11 @@ function Library:CreateWindow(title)
     local Scale = Create("UIScale", { Parent = Main })
     local function updateScale()
         local view = Camera.ViewportSize
-        local scaleFactor = math.min(view.X / 700, view.Y / 500, 1)
+        local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+        local refX = isMobile and 1000 or 800
+        local refY = isMobile and 700 or 550
+        local scaleFactor = math.min(view.X / refX, view.Y / refY, 1)
+        if isMobile then scaleFactor = scaleFactor * 0.8 end
         Scale.Scale = scaleFactor
     end
     updateScale()
