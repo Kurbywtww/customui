@@ -88,7 +88,7 @@ function Library:CreateWindow(title)
         local refX = isMobile and 1000 or 800
         local refY = isMobile and 700 or 550
         local scaleFactor = math.min(view.X / refX, view.Y / refY, 1)
-        if isMobile then scaleFactor = scaleFactor * 0.8 end
+        if isMobile then scaleFactor = scaleFactor * 1.1 end
         Scale.Scale = scaleFactor
     end
     updateScale()
@@ -157,7 +157,7 @@ function Library:CreateWindow(title)
     Library:MakeDraggable(Main)
 
     -- Mobile detection & toggle
-    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    local isMobile = UIS.TouchEnabled
     local toggled = true
 
     local function toggleUI()
@@ -173,7 +173,7 @@ function Library:CreateWindow(title)
     end)
 
     -- Mobile detection (Keybind still active via RightShift)
-    local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+    local isMobile = UIS.TouchEnabled
 
     local Window = { Current = nil }
 
@@ -184,7 +184,8 @@ function Library:CreateWindow(title)
             Name = name .. "Tab",
             Parent = List,
             BackgroundTransparency = 1,
-            Size = UDim2.new(1, 0, 0, 50)
+            Size = UDim2.new(1, 0, 0, 50),
+            Active = true
         })
 
         -- Hover highlight
@@ -252,14 +253,14 @@ function Library:CreateWindow(title)
             if Tab.CurrentST then Tab.CurrentST:Select() elseif Tab.SubTabs[1] then Tab.SubTabs[1]:Select() end
         end
 
-        Btn.MouseButton1Click:Connect(function() Tab:Select() end)
+        Btn.Activated:Connect(function() Tab:Select() end)
         Btn.MouseEnter:Connect(function() if not Window.Current or Window.Current.Tab ~= Tab then Tween(Highlight, 0.2, { BackgroundTransparency = 0.92 }) end end)
         Btn.MouseLeave:Connect(function() if not Window.Current or Window.Current.Tab ~= Tab then Tween(Highlight, 0.2, { BackgroundTransparency = 1 }) end end)
 
         function Tab:CreateSubTab(stName, stIconName)
             local stIconData = Library:GetIcon(stIconName or "layout")
             local SBtn = Create("Frame", { Parent = SubTabBar, BackgroundTransparency = 1, Size = UDim2.new(0, 0, 1, 0), AutomaticSize = "X", Visible = false })
-            local SClick = Create("TextButton", { Parent = SBtn, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Text = "" })
+            local SClick = Create("TextButton", { Parent = SBtn, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Text = "", Active = true })
             local SIco = Create("ImageLabel", {
                 Name = "Icon",
                 Parent = SBtn,
@@ -323,7 +324,7 @@ function Library:CreateWindow(title)
                 Tween(SIco, 0.2, { ImageColor3 = Library.Accent })
                 Tween(SLine, 0.2, { BackgroundTransparency = 0 })
             end
-            SClick.MouseButton1Click:Connect(function() SubTab:Select() end)
+            SClick.Activated:Connect(function() SubTab:Select() end)
             table.insert(Tab.SubTabs, SubTab)
 
             function SubTab:CreateSection(secName)
@@ -340,7 +341,7 @@ function Library:CreateWindow(title)
 
                 -- TOGGLE
                 function S:CreateToggle(n, def, cb)
-                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
+                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false, Active = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
                     Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -64, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
                     local O = Create("Frame", { Parent = F, AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = Color3.fromRGB(35, 35, 35), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.new(0, 36, 0, 18) })
@@ -349,19 +350,19 @@ function Library:CreateWindow(title)
                     Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = I })
                     local t = def or false
                     local function u() Tween(O, 0.2, { BackgroundColor3 = t and Library.Accent or Color3.fromRGB(35, 35, 35) }); Tween(I, 0.2, { Position = t and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7) }); if cb then cb(t) end end
-                    F.MouseButton1Click:Connect(function() t = not t; u() end)
+                    F.Activated:Connect(function() t = not t; u() end)
                     u()
                     return { Set = function(_, v) t = v; u() end }
                 end
 
                 -- BUTTON
                 function S:CreateButton(n, cb)
-                    local B = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false })
+                    local B = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false, Active = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = B })
                     Create("TextLabel", { Parent = B, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 1, 0), Font = "Gotham", Text = n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14 })
                     B.MouseEnter:Connect(function() Tween(B, 0.15, { BackgroundColor3 = Color3.fromRGB(20, 20, 20) }) end)
                     B.MouseLeave:Connect(function() Tween(B, 0.15, { BackgroundColor3 = Color3.fromRGB(13, 13, 13) }) end)
-                    B.MouseButton1Click:Connect(function() if cb then cb() end end)
+                    B.Activated:Connect(function() if cb then cb() end end)
                 end
 
                 -- SLIDER
@@ -394,7 +395,7 @@ function Library:CreateWindow(title)
                 -- DROPDOWN
                 function S:CreateDropdown(n, items, def, cb)
                     items = items or {}; cb = cb or function() end
-                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true, Text = "", AutoButtonColor = false })
+                    local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true, Text = "", AutoButtonColor = false, Active = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
                     local Lbl = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, Position = UDim2.new(0, 12, 0, 0), Size = UDim2.new(1, -44, 0, 42), Font = "Gotham", Text = def and (n .. ": " .. tostring(def)) or n, TextColor3 = Color3.fromRGB(225, 225, 225), TextSize = 14, TextXAlignment = "Left" })
                     local Arrow = Create("TextLabel", { Parent = F, BackgroundTransparency = 1, AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -12, 0, 0), Size = UDim2.new(0, 20, 0, 42), Font = "GothamBold", Text = "v", TextColor3 = Color3.fromRGB(140, 140, 140), TextSize = 12 })
@@ -404,11 +405,11 @@ function Library:CreateWindow(title)
                     local function refresh(list)
                         for _, c in next, ItemList:GetChildren() do if c:IsA("TextButton") then c:Destroy() end end
                         for _, item in next, list do
-                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(22, 22, 22), Size = UDim2.new(1, 0, 0, 28), Font = "Gotham", Text = tostring(item), TextColor3 = Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false })
+                            local Btn = Create("TextButton", { Parent = ItemList, BackgroundColor3 = Color3.fromRGB(22, 22, 22), Size = UDim2.new(1, 0, 0, 28), Font = "Gotham", Text = tostring(item), TextColor3 = Color3.fromRGB(200, 200, 200), TextSize = 13, AutoButtonColor = false, Active = true })
                             Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = Btn })
                             Btn.MouseEnter:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(30, 30, 30) }) end)
                             Btn.MouseLeave:Connect(function() Tween(Btn, 0.1, { BackgroundColor3 = Color3.fromRGB(22, 22, 22) }) end)
-                            Btn.MouseButton1Click:Connect(function()
+                            Btn.Activated:Connect(function()
                                 Lbl.Text = n .. ": " .. tostring(item)
                                 opened = false
                                 Arrow.Text = "v"
@@ -418,7 +419,7 @@ function Library:CreateWindow(title)
                         end
                     end
                     refresh(items)
-                    F.MouseButton1Click:Connect(function()
+                    F.Activated:Connect(function()
                         opened = not opened
                         Arrow.Text = opened and "^" or "v"
                         local h = opened and (42 + ItemList.UIListLayout.AbsoluteContentSize.Y + 8) or 42
@@ -478,12 +479,13 @@ function Library:CreateWindow(title)
                         Text = defKey and defKey.Name or "None",
                         TextColor3 = Library.Accent,
                         TextSize = 12,
-                        AutoButtonColor = false
+                        AutoButtonColor = false,
+                        Active = true
                     })
                     Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = KeyBtn })
                     local binding = false
                     local currentKey = defKey
-                    KeyBtn.MouseButton1Click:Connect(function()
+                    KeyBtn.Activated:Connect(function()
                         binding = true
                         KeyBtn.Text = "..."
                     end)
