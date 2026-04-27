@@ -61,6 +61,88 @@ function Library:GetIcon(name)
     return Icons[name] or Icons["home"]
 end
 
+local NotificationGui = Create("ScreenGui", {
+    Name = "KurbyNotifications",
+    Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or CoreGui,
+    ResetOnSpawn = false
+})
+
+local NotifyList = Create("Frame", {
+    Parent = NotificationGui,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(1, -20, 1, -20),
+    AnchorPoint = Vector2.new(1, 1),
+    Size = UDim2.new(0, 280, 1, -40)
+})
+Create("UIListLayout", {
+    Parent = NotifyList,
+    VerticalAlignment = "Bottom",
+    Padding = UDim.new(0, 10),
+    SortOrder = "LayoutOrder"
+})
+
+function Library:Notify(title, text, duration)
+    duration = duration or 5
+    local F = Create("Frame", {
+        Parent = NotifyList,
+        BackgroundColor3 = Color3.fromRGB(12, 12, 12),
+        Size = UDim2.new(1, 40, 0, 0), -- Start wider for slide-in
+        ClipsDescendants = true,
+        BackgroundTransparency = 1
+    })
+    Create("UICorner", { CornerRadius = UDim.new(0, 8), Parent = F })
+    Create("UIStroke", { Color = Color3.fromRGB(40, 40, 40), Parent = F })
+    
+    local AccentBar = Create("Frame", {
+        Parent = F,
+        BackgroundColor3 = Library.Accent,
+        Size = UDim2.new(0, 3, 1, 0),
+        BorderSizePixel = 0
+    })
+    
+    local T = Create("TextLabel", {
+        Parent = F,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 12, 0, 8),
+        Size = UDim2.new(1, -24, 0, 18),
+        Font = "GothamBold",
+        Text = title or "Notification",
+        TextColor3 = Library.Accent,
+        TextSize = 14,
+        TextXAlignment = "Left"
+    })
+    
+    local C = Create("TextLabel", {
+        Parent = F,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 12, 0, 26),
+        Size = UDim2.new(1, -24, 0, 0),
+        AutomaticSize = "Y",
+        Font = "Gotham",
+        Text = text or "",
+        TextColor3 = Color3.fromRGB(200, 200, 200),
+        TextSize = 13,
+        TextXAlignment = "Left",
+        TextWrapped = true
+    })
+
+    task.spawn(function()
+        -- Measure size
+        local targetHeight = C.AbsoluteSize.Y + 38
+        F.Size = UDim2.new(1, 40, 0, targetHeight)
+        F.Position = UDim2.new(0, 50, 0, 0)
+        
+        -- Animation In
+        Tween(F, 0.4, { BackgroundTransparency = 0, Position = UDim2.new(0, 0, 0, 0) })
+        task.wait(duration)
+        
+        -- Animation Out
+        Tween(F, 0.4, { BackgroundTransparency = 1, Position = UDim2.new(0, 50, 0, 0) })
+        task.wait(0.4)
+        F:Destroy()
+    end)
+end
+
 function Library:CreateWindow(title)
     local ScreenGui = Create("ScreenGui", {
         Name = "KurbyLib",
