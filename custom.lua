@@ -8,8 +8,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local Library = { Toggled = true, Accent = Color3.fromRGB(160, 60, 255), _blockDrag = false }
 
--- Lucide Icons via latte-soft/lucide-roblox (48px sprite-sheet data)
--- Format: { assetId, rectW, rectH, rectOffsetX, rectOffsetY }
 local Icons = {
     home          = { 16898613509, 48, 48, 820, 147 },
     flame         = { 16898613353, 48, 48, 967, 306 },
@@ -62,10 +60,13 @@ function Library:GetIcon(name)
 end
 
 function Library:CreateWindow(title)
+    local guiParent = pcall(function() return CoreGui.Name end) and CoreGui or LocalPlayer.PlayerGui
     local ScreenGui = Create("ScreenGui", {
         Name = "KurbyLib",
-        Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or CoreGui,
-        ResetOnSpawn = false
+        Parent = guiParent,
+        ResetOnSpawn = false,
+        DisplayOrder = 999,
+        IgnoreGuiInset = true
     })
     if getgenv then
         if getgenv()._KurbyUI then getgenv()._KurbyUI:Destroy() end
@@ -97,7 +98,6 @@ function Library:CreateWindow(title)
     Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = Main })
     Create("UIStroke", { Color = Color3.fromRGB(45, 45, 45), Parent = Main })
 
-    -- Sidebar
     local Sidebar = Create("Frame", {
         Parent = Main,
         BackgroundColor3 = Color3.fromRGB(13, 13, 13),
@@ -105,7 +105,6 @@ function Library:CreateWindow(title)
     })
     Create("UIStroke", { Color = Color3.fromRGB(35, 35, 35), ApplyStrokeMode = "Border", Parent = Sidebar })
 
-    -- Logo
     Create("TextLabel", {
         Parent = Sidebar,
         BackgroundTransparency = 1,
@@ -128,7 +127,6 @@ function Library:CreateWindow(title)
         Padding = UDim.new(0, 4)
     })
 
-    -- Content area
     local Container = Create("Frame", {
         Parent = Main,
         BackgroundTransparency = 1,
@@ -156,24 +154,52 @@ function Library:CreateWindow(title)
     local Folder = Create("Frame", { Parent = Container, BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 48), Size = UDim2.new(1, 0, 1, -48) })
     Library:MakeDraggable(Main)
 
-    -- Mobile detection & toggle
     local isMobile = UIS.TouchEnabled
     local toggled = true
 
     local function toggleUI()
         toggled = not toggled
         Main.Visible = toggled
+        if isMobile and MobileBtn then
+            Tween(MobileBtn, 0.2, {
+                ImageTransparency = toggled and 0 or 0.5
+            })
+        end
     end
 
-    -- RightShift to toggle (always active)
     UIS.InputBegan:Connect(function(input)
         if input.KeyCode == Enum.KeyCode.RightShift then
             toggleUI()
         end
-    end)
+    end)    -- ── Mobile toggle button (touch devices only) ───────────────────────────
+    local MobileBtn
+    if isMobile then
+        MobileBtn = Create("ImageButton", {
+            Parent               = ScreenGui,
+            Name                 = "MobileToggleBtn",
+            AnchorPoint          = Vector2.new(1, 0.5),
+            Position             = UDim2.new(1, -8, 0.5, 0),
+            Size                 = UDim2.new(0, 56, 0, 56),
+            BackgroundColor3     = Color3.fromRGB(15, 15, 15),
+            BackgroundTransparency = 0.3,
+            Image                = "rbxassetid://73647909352875",
+            ImageTransparency    = 0,
+            ScaleType            = Enum.ScaleType.Fit,
+            ZIndex               = 10,
+            AutoButtonColor      = false,
+            Active               = true
+        })
+        Create("UICorner", { CornerRadius = UDim.new(0, 10), Parent = MobileBtn })
 
-    -- Mobile detection (Keybind still active via RightShift)
-    local isMobile = UIS.TouchEnabled
+        MobileBtn.Activated:Connect(function()
+            Tween(MobileBtn, 0.08, { Size = UDim2.new(0, 48, 0, 48) })
+            task.delay(0.09, function()
+                Tween(MobileBtn, 0.12, { Size = UDim2.new(0, 56, 0, 56) })
+            end)
+            toggleUI()
+        end)
+    end
+
 
     local Window = { Current = nil }
 
@@ -188,7 +214,6 @@ function Library:CreateWindow(title)
             Active = true
         })
 
-        -- Hover highlight
         local Highlight = Create("Frame", {
             Parent = Btn,
             BackgroundColor3 = Color3.fromRGB(30, 30, 30),
@@ -198,7 +223,6 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = Highlight })
 
-        -- Purple indicator
         local Ind = Create("Frame", {
             Name = "Indicator",
             Parent = Btn,
@@ -211,7 +235,6 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", { CornerRadius = UDim.new(1, 0), Parent = Ind })
 
-        -- Lucide icon via sprite sheet
         local iconData = Library:GetIcon(iconName or "home")
         local Ico = Create("ImageLabel", {
             Name = "Icon",
@@ -339,7 +362,6 @@ function Library:CreateWindow(title)
                 end)
                 local S = {}
 
-                -- TOGGLE
                 function S:CreateToggle(n, def, cb)
                     local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false, Active = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
@@ -355,7 +377,6 @@ function Library:CreateWindow(title)
                     return { Set = function(_, v) t = v; u() end }
                 end
 
-                -- BUTTON
                 function S:CreateButton(n, cb)
                     local B = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), Text = "", AutoButtonColor = false, Active = true })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = B })
@@ -365,7 +386,6 @@ function Library:CreateWindow(title)
                     B.Activated:Connect(function() if cb then cb() end end)
                 end
 
-                -- SLIDER
                 function S:CreateSlider(n, min, max, def, cb)
                     min = min or 0; max = max or 100; def = def or min; cb = cb or function() end
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 50) })
@@ -392,7 +412,6 @@ function Library:CreateWindow(title)
                     return { Set = function(_, v) local p = (v - min)/(max - min); Fill.Size = UDim2.new(p, 0, 1, 0); Val.Text = tostring(v); cb(v) end }
                 end
 
-                -- DROPDOWN
                 function S:CreateDropdown(n, items, def, cb)
                     items = items or {}; cb = cb or function() end
                     local F = Create("TextButton", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42), ClipsDescendants = true, Text = "", AutoButtonColor = false, Active = true })
@@ -428,7 +447,6 @@ function Library:CreateWindow(title)
                     return { Refresh = function(_, list) refresh(list) end }
                 end
 
-                -- TEXTBOX
                 function S:CreateTextBox(n, placeholder, cb)
                     cb = cb or function() end
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
@@ -455,7 +473,6 @@ function Library:CreateWindow(title)
                     return { Set = function(_, v) Box.Text = v end, Get = function() return Box.Text end }
                 end
 
-                -- LABEL
                 function S:CreateLabel(n)
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 32) })
                     Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = F })
@@ -463,7 +480,6 @@ function Library:CreateWindow(title)
                     return { Set = function(_, v) Lbl.Text = v end }
                 end
 
-                -- KEYBIND
                 function S:CreateKeybind(n, defKey, cb)
                     cb = cb or function() end
                     local F = Create("Frame", { Parent = Content, BackgroundColor3 = Color3.fromRGB(13, 13, 13), Size = UDim2.new(1, 0, 0, 42) })
